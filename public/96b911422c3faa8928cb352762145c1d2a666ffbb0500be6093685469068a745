@@ -1,0 +1,26 @@
+{
+  "id": "/",
+  "name": "Growtopia Simulator",
+  "short_name": "GT Simulator",
+  "description": "Try every Growtopia outfit, play and build worlds, pixel art and music - free, on phone and PC.",
+  "lang": "en",
+  "start_url": "/set/",
+  "scope": "/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "any",
+  "background_color": "#1f2d44",
+  "theme_color": "#1f2d44",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable"},
+    {"src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ],
+  "shortcuts": [
+    {"name": "Set", "url": "/set/", "icons": [{"src": "icon-192.png", "sizes": "192x192"}]},
+    {"name": "World", "url": "/world/", "icons": [{"src": "icon-192.png", "sizes": "192x192"}]},
+    {"name": "Edit World", "url": "/edit/", "icons": [{"src": "icon-192.png", "sizes": "192x192"}]}
+  ]
+}

@@ -1,0 +1,19 @@
+.cache/
+node_modules/
+*.log
+deploy/
+deploy.zip
+.vercel/
+.vercel-thang/
+.env*
+
+# Local secrets and generated artifacts
+.env
+.env.local
+.env.*.local
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
+node_modules/

@@ -1,0 +1,156 @@
+:root{--sky:#8ce6f1;--sky-low:#65bdd2;--sea:#16495f;--sea-deep:#103747;--line:#ffffff9c;--ink-blue:#123d50}
+button,summary,input,select,textarea{font-family:inherit}
+button:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid #fff0a4;outline-offset:3px}
+.panel,.options-panel,dialog,.world-menu{background:#16495ff5;border:1px solid var(--line);border-radius:10px;box-shadow:none;backdrop-filter:none}
+.settings-grid fieldset{background:#205b70;border-color:#6ba6b6;border-radius:8px}
+.settings-grid legend,.about-panel h2{color:#b8f0f5}
+.settings-actions button,dialog button,.world-entry-actions button{background:linear-gradient(var(--sky),var(--sky-low));border:1px solid #317994;border-radius:9px;color:var(--ink-blue);box-shadow:0 2px #235773;text-shadow:none}
+.world-card{background:#39738a;border:1px solid #8dccd9;border-radius:8px;box-shadow:none;color:white}
+.world-card:hover{background:#458a9e}
+.world-menu .world-entry-actions button{color:#fff;background:linear-gradient(#387f98,#27657f);border:1px solid #ffffffbd;text-shadow:0 1px 1px #143c50}
+.world-menu .world-entry-actions button:hover{background:linear-gradient(#4695ac,#327b94)}
+.world-menu .world-entry,.world-menu .tools{border:1px solid #ffffff70;border-radius:8px;padding:10px}
+.panel,.options-panel,dialog,.world-menu,.settings-grid fieldset,.world-card,.about-flow li{border-color:#ffffff9c}
+.world-entry input{min-width:0;max-width:100%}
+.online-topline{background:#124960ed;border:1px solid #7cc3d4;color:#e7fbff;box-shadow:none}
+.online-topline .status{font-size:10px}
+.amb-icon-button{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.amb-icon-button svg{width:24px;height:24px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8}
+.amb-icon-button svg path{fill:none!important;stroke:currentColor!important}
+.native-play .online-actions{background:#124960ed;border:1px solid #82c9d8;border-radius:13px;padding:5px;gap:7px;width:max-content;max-width:calc(100% - 16px)}
+.native-play .online-actions>.amb-icon-button,.native-play .world-more>summary{width:44px;min-width:44px;height:44px;min-height:44px;padding:9px;background:linear-gradient(var(--sky),var(--sky-low));border:1px solid #39829b;border-radius:9px;box-shadow:none;color:var(--ink-blue);text-shadow:none}
+.native-play .online-actions>button[aria-pressed=true],.native-play .online-actions>button[aria-expanded=true]{background:#fff1a1;border-color:#d5b557;color:#654d18}
+.native-play .world-more[open]>summary{background:#b5f3f8;border-color:#fff!important;color:#123d50!important}
+.native-play .world-more-items{background:#16495f;border-color:#8ccddd;border-radius:10px;padding:8px;box-shadow:0 3px #0b344a66}
+.native-play .world-more-items>button,.native-play .world-more-items>button.secondary-action{display:flex!important;align-items:center;gap:10px;background:#82d4e3;color:#123d50;border:1px solid #b1ecf3;border-radius:7px;font-size:12px;text-shadow:none}
+.native-play .native-inventory{background:#16495f;border:1px solid #8ccddd;border-radius:10px;gap:8px}
+.native-play .native-inventory button{background:#83d8e6;color:#123d50;border:1px solid #afeaf2;border-radius:8px;font-size:11px}
+.native-play .native-inventory button[hidden]{display:none}
+.online-hud{left:12px;right:12px;top:54px;max-width:none}
+.native-play .online-chat,.native-play .online-chat:not([open]){position:relative;left:0;right:auto;top:0;width:min(620px,100%);max-width:100%;margin:6px 0 0;padding:0;background:#174d65ed;border:1px solid #88cbdc;border-radius:9px;opacity:1;box-shadow:none;visibility:visible;overflow:hidden;height:38px;transition:height .18s ease-out}
+.native-play .online-chat[open]{height:var(--chat-height,250px);max-height:55dvh;animation:none}
+.native-play .online-chat.is-dragging{transition:none}
+.native-play .online-chat summary,.native-play .online-chat:not([open]) summary{display:flex;align-items:center;gap:8px;width:100%;height:36px;min-height:36px;padding:5px 12px;font-size:12px!important;background:#78cddd;color:#123d50;filter:none;list-style:none;cursor:ns-resize;touch-action:none;user-select:none}
+.online-chat summary::-webkit-details-marker{display:none}
+.online-chat summary svg{width:20px;height:20px;stroke:#123d50;fill:none;flex:none}
+.online-chat summary i{margin-left:auto;width:36px;height:6px;border-top:2px solid #346e85;border-bottom:2px solid #346e85;border-radius:2px}
+.native-play .online-chat[open] .chat-log{height:calc(var(--chat-height,250px) - 100px);max-height:calc(55dvh - 100px);margin:0;padding:10px 12px;overflow:auto;touch-action:pan-y;overscroll-behavior:contain;background:transparent;color:#f0fcff;font-size:13px}
+.native-play .online-chat form{margin:0;padding:5px 8px;gap:6px;min-height:54px;background:#113d52}
+.native-play .online-chat input{font-size:16px;min-height:44px;background:#e4f7fa;color:#164257;border:1px solid #73bacc;border-radius:7px}
+.native-play .online-chat form button{width:44px;height:44px;min-height:44px;padding:8px;background:#83d8e6;border:1px solid #a7e4ed;border-radius:7px;color:#123d50}
+.online-chat>.status:empty{display:none}
+.native-play .online-chat>.status:not(:empty){position:absolute;bottom:54px;left:8px;right:8px;background:#16495f;margin:0;padding:6px;font-size:12px}
+.about-panel{width:min(900px,100%);line-height:1.65;text-align:left}
+.about-panel>h1{margin-bottom:4px}
+.about-byline{margin-top:0;color:#b7eef6;font-size:17px}
+.about-panel h2{font-size:20px;margin:26px 0 10px}
+.about-panel p,.about-panel li,.about-panel dd{font-size:14px}
+.about-panel li{margin-bottom:9px}
+.about-panel a{color:#d2faff;text-underline-offset:3px}
+.about-flow{display:flex;gap:22px;list-style:none;padding:0;align-items:stretch}
+.about-flow li{position:relative;flex:1;padding:12px 9px;border:1px solid #91d3df;border-radius:8px;background:#287188;text-align:center;font-size:12px}
+.about-flow li:not(:last-child)::after{content:'→';position:absolute;right:-20px;top:calc(50% - 12px);color:#b4eaf2;font-size:18px}
+.about-credits{display:grid;grid-template-columns:160px 1fr;gap:12px 20px}
+.about-credits dt{color:#b9eff5;font-size:13px}
+.about-credits dd{margin:0}
+@media(min-width:901px) and (pointer:fine){.native-play.native-clothes .online-hud{left:160px;right:calc(34% + 12px)}}
+#gs-bar{background:#174a60!important;border-color:#7cc3d4!important}
+#gs-nav{background:#11384b!important;border-radius:9px!important}
+#gs-nav a{color:#cceff6!important;border-radius:7px!important}
+#gs-nav a.on,#gs-nav a[aria-current=page]{background:#92e4ef!important;color:#123d50!important}
+#gs-bar .gs-ib,#gs-exb,#g2-emob,.zoom button{background:linear-gradient(#8ce6f1,#65bdd2)!important;border:1px solid #3b869f!important;border-radius:9px!important;color:#123d50!important;box-shadow:none!important}
+#gs-exb.amb-icon-button,#g2-emob.amb-icon-button,.zoom button.amb-icon-button{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;padding:9px!important;font-size:0!important;gap:0!important}
+#gs-exb.amb-icon-button svg,#g2-emob.amb-icon-button svg,.zoom button.amb-icon-button svg{width:24px!important;height:24px!important;stroke:#123d50!important;fill:none!important}
+.zoom,html.amb-online .zoom{top:144px!important}
+#panel,#g2,#g2-dock,#gs-menu,.g2-pop{background:#16495f!important;border-color:#78bccc!important;border-radius:8px!important;box-shadow:none!important}
+#g2-rail.amb-pixel-rail{background:#174a60!important}
+#g2-rail.amb-pixel-rail .g2-rg{background:#205c72!important;border:1px solid #639eaf!important;border-radius:8px!important;box-shadow:none!important}
+#g2-rail.amb-pixel-rail .g2-re{background:#2e7086!important;color:#e2f6fa!important;border-radius:6px!important}
+#g2-rail.amb-pixel-rail .g2-re[aria-current=true]{background:#9ce5ed!important;border-color:#cbf6fa!important;color:#123d50!important;box-shadow:none!important}
+#g2-rail.amb-pixel-rail .g2-re[aria-current=true]>svg{fill:#21647d!important}
+#g2-rail.amb-pixel-rail .g2-re[aria-current=true]>span,#g2-rail.amb-pixel-rail .g2-re[aria-current=true]>em{color:#123d50!important}
+#g2-q{background:#e0f5f8!important;color:#164257!important;border:1px solid #8ccddd!important;border-radius:8px!important}
+#g2-title{color:#cff5fa!important}
+#g2 .g2-it{background:#26647a!important;border:1px solid #689eb0!important;border-radius:7px!important;box-shadow:none!important}
+#g2 .g2-it.on,#g2 .g2-it:has(.g2-w[aria-pressed=true]){background:#3b899c!important;border-color:#bbf4f7!important;box-shadow:inset 0 -2px #bbf4f7!important}
+#g2 .g2-n{color:#effbff!important}
+html[data-compact-items=true] #g2 .g2-it{background:#205d73!important;border-color:transparent!important;box-shadow:none!important}
+#g2-slots>div{background:#246178!important;border-color:#72afc1!important;border-radius:7px!important}
+#g2-acts button{background:#82d4e3!important;color:#123d50!important;border-color:#a9e4ee!important;border-radius:7px!important}
+@media(max-width:900px),(pointer:coarse){
+ .world-menu{min-width:0;max-width:100%;padding:20px 14px}
+ .world-menu .world-entry{grid-template-columns:1fr;gap:8px}
+ .world-menu .world-entry-actions{display:flex;flex-wrap:wrap;gap:10px}
+ .world-menu .world-entry-actions button{min-width:0;flex:1 1 120px;min-height:48px;font-size:clamp(18px,5vw,25px);white-space:normal}
+ .world-menu .world-card{max-width:100%;overflow-wrap:anywhere}
+ .world-menu .tools{display:flex;flex-wrap:wrap;gap:12px}
+ .native-play .online-actions{left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:calc(100% - 12px);height:56px;gap:6px}
+ .native-play .online-actions>.amb-icon-button,.native-play .world-more>summary{width:44px;min-width:44px;max-width:44px;padding:9px;flex:none}
+ .native-play .world-more{flex:none;width:44px;min-width:44px}
+ .online-hud{top:52px;left:8px;right:8px}
+ .native-play .online-chat,.native-play .online-chat:not([open]){width:100%;max-width:100%;top:0;left:0;right:0;visibility:visible}
+ .native-play .world-more-items{max-height:50dvh}
+ .about-flow{flex-direction:column;gap:20px}
+ .about-flow li:not(:last-child)::after{content:'↓';right:calc(50% - 6px);top:auto;bottom:-23px}
+ .about-credits{grid-template-columns:1fr;gap:4px}.about-credits dd{margin-bottom:12px}
+ .about-panel{padding:20px 16px}
+}
+.native-play .online-actions,.native-play .native-inventory,.native-play .world-more-items,.native-play .online-chat{border-color:#ffffff9c}
+#panel,#g2,#g2-dock,#gs-menu,.g2-pop,#gs-bar,#g2-rail.amb-pixel-rail .g2-rg{border-color:#ffffff9c!important}
+@media(prefers-reduced-motion:reduce){.native-play .online-chat{transition:none}.world-more-items{animation:none}}
+
+/* Keep action feedback out of the chat sheet's layout. */
+.native-play .online-topline{height:28px;min-height:28px;max-height:28px;flex-wrap:nowrap;overflow:hidden;white-space:nowrap}
+.native-play .online-topline>*{flex:none}
+.native-play .online-topline .status{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0}
+.native-play .online-chat,.native-play .online-chat:not([open]){position:absolute;top:34px;left:0;margin:0}
+.native-play .online-chat:not([open]){animation:none;clip-path:none}
+.native-play .online-chat summary:active{translate:none;transform:none}
+.native-modal .online-chat,.native-menu-open .online-chat{visibility:hidden!important}
+#gs-ex .g2-ph,#g2-emo .g2-ph{position:sticky;top:0;z-index:5;background:#16495f;min-height:40px;padding:6px 0}
+html.amb-online #g2-emo{position:fixed!important;left:8px!important;right:auto!important;top:54px!important;width:min(430px,calc(100vw - 16px))!important;max-height:calc(100dvh - 126px)!important;overflow:auto!important}
+@media(min-height:521px) and (max-width:900px){html.gs.v2.amb-online.amb-clothes-open.amb-panel-tall #panel{height:min(82dvh,690px)!important}}
+
+@media(max-width:900px),(pointer:coarse){
+ .native-play.native-clothes .online-chat{visibility:hidden!important}
+ .native-play .online-actions{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));width:min(360px,calc(100% - 16px - env(safe-area-inset-left) - env(safe-area-inset-right)));height:56px;gap:4px;bottom:max(6px,env(safe-area-inset-bottom));padding:5px;overflow:visible}
+ .native-play .online-actions>.amb-icon-button,.native-play .world-more,.native-play .world-more>summary{width:100%;min-width:0;max-width:none;height:44px;min-height:44px}
+ .native-play .world-more-items{width:min(240px,calc(100vw - 32px));max-height:calc(100dvh - 150px)}
+ .native-play .mobile-controls{bottom:calc(74px + env(safe-area-inset-bottom))}
+ .native-play .native-inventory{bottom:calc(72px + env(safe-area-inset-bottom))}
+ html.amb-online.amb-clothes-open #panel{bottom:calc(68px + env(safe-area-inset-bottom))!important;height:min(68dvh,540px)!important;max-height:calc(100dvh - 156px)!important}
+ html.gs.v2 #g2-dock,html.amb-online #g2-dock{position:relative!important;inset:auto!important;display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:76px 44px!important;gap:6px!important;width:100%!important;min-width:0!important;max-width:100%!important;height:138px!important;min-height:138px!important;padding:6px!important;overflow:hidden!important;flex:none!important;box-sizing:border-box!important;touch-action:auto!important}
+ html.gs.v2 #g2-dock>.g2-div{display:none!important}
+ html.gs.v2 #g2-slots{display:flex!important;flex:none!important;width:100%!important;min-width:0!important;max-width:100%!important;height:76px!important;align-items:center!important;gap:10px!important;padding:8px 7px!important;overflow-x:auto!important;overflow-y:hidden!important;box-sizing:border-box!important;touch-action:pan-x!important}
+ html.gs.v2 #g2-slots>.g2-slot{flex:0 0 58px!important;width:58px!important;min-width:58px!important;max-width:58px!important;height:58px!important}
+ html.gs.v2 #g2-dock .g2-sx,html.amb-online #g2-dock .g2-sx{width:24px!important;min-width:24px!important;max-width:24px!important;height:24px!important;min-height:24px!important;max-height:24px!important;top:-3px!important;right:-3px!important;padding:0!important;border-width:1px!important;border-radius:50%!important;box-shadow:none!important;font-size:12px!important;z-index:2}
+ html.gs.v2 #g2-dock .g2-sx::after{inset:-5px!important}
+ html.gs.v2 #g2-dock .g2-sx svg{width:10px!important;height:10px!important}
+ html.gs.v2 #g2-acts{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;position:static!important;width:100%!important;min-width:0!important;height:44px!important;gap:6px!important;overflow:hidden!important;padding:0!important}
+ html.gs.v2 #g2-acts>button{width:100%!important;min-width:0!important;max-width:none!important;height:44px!important;min-height:44px!important;margin:0!important;padding:6px!important;overflow:hidden!important;box-sizing:border-box!important;gap:0!important;justify-content:center!important}
+ html.gs.v2 #g2-acts>button svg{width:20px!important;height:20px!important;flex:none!important}
+ html.gs.v2 #g2-acts .l{display:none!important}
+ html.gs.v2.amb-online.amb-clothes-open #panel{display:flex!important;flex-direction:column!important}
+ html.gs.v2.amb-online.amb-clothes-open #g2-rail{display:flex!important;position:relative!important;inset:auto!important;width:100%!important;max-width:100%!important;height:auto!important;flex:none!important;flex-direction:row!important}
+}
+@media(max-height:520px) and (orientation:landscape) and (max-width:900px){
+ .native-play .online-chat[open]{height:min(var(--chat-height,250px),calc(100dvh - 240px));max-height:calc(100dvh - 240px)}
+ .native-play .online-chat[open] .chat-log{height:min(calc(var(--chat-height,250px) - 100px),calc(100dvh - 340px));max-height:calc(100dvh - 340px)}
+ .native-clothes .online-hud,.native-clothes .online-chat{visibility:hidden!important}
+ html.gs.v2.amb-online.amb-clothes-open #panel{top:52px!important;bottom:calc(68px + env(safe-area-inset-bottom))!important;height:auto!important;max-height:none!important}
+ html.gs.v2.amb-online #g2-dock{grid-template-columns:minmax(0,1fr) minmax(210px,240px)!important;grid-template-rows:64px!important;height:80px!important;min-height:80px!important}
+ html.gs.v2.amb-online #g2-slots{height:64px!important;padding:4px 7px!important}
+ html.gs.v2.amb-online #g2-acts{align-self:center}
+ html.gs.v2.amb-online #gs-head{display:none!important}
+ html.gs.v2.amb-online #g2-rail.amb-pixel-rail{padding:4px!important;gap:6px!important}
+ html.gs.v2.amb-online #g2-rail .g2-rg{padding:0!important}
+ html.gs.v2.amb-online #g2-rail .g2-rgl,html.gs.v2.amb-online #g2-rail .g2-re>span,html.gs.v2.amb-online #g2-rail .g2-re>em{display:none!important}
+ html.gs.v2.amb-online #g2-rail .g2-rgi{gap:4px!important}
+ html.gs.v2.amb-online #g2-rail .g2-re{width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;padding:4px!important}
+}
+@media(max-height:359px) and (orientation:landscape) and (max-width:900px){
+ .native-play .online-chat[open]{left:50%;transform:translateX(-50%);width:calc(100% - 328px);height:min(var(--chat-height,250px),calc(100dvh - 150px));max-height:calc(100dvh - 150px)}
+ .native-play .online-chat[open] .chat-log{height:calc(100dvh - 250px);max-height:calc(100dvh - 250px)}
+ .native-play .online-chat input{min-width:0}
+ .native-play .online-chat form button{flex:none}
+}

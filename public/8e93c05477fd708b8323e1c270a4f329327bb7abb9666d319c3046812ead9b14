@@ -1,0 +1,457 @@
+/* UI v2 of the "Growtopia Simulator" skin (audit\UI_V2_BRIEF.md; gs_ui2.js). Loaded after gs_ui.css and only where
+   <html class="gs v2"> is set (index.html: ?v2=1 once), so every rule starts with html.gs.v2 or names a #g2- / .g2- part
+   that only gs_ui2.js makes. The owner's layout of 2026-10-13: the RAIL (#g2-rail: Clothes / Look / Name entries) is the
+   one navigation, the PANEL shows the chosen entry's content, the DOCK (#g2-dock) shows what is worn + the actions.
+   Layouts as in gs_ui.css: SIDE (wide: rail = a column at the left, dock = a bar under the scene, panel at the right)
+   and SHEET (phone: dock, handle, rail = rows on top of the bottom sheet, the content under them).
+   THE LOOK = the World Planner's (wp.css, /setplanner/world): the same tokens (names and values below), its light-blue
+   buttons with dark-blue ink and edge, its dark inventory boxes with a light frame, yellow = chosen, its panels.
+   Radii as there: 6 - 8 boxes, 10 - 12 buttons and fields, 14 panels and popovers, 99 pills. */
+html.gs.v2{
+  --navy: #1f2d44; --navy2: #2a3b57; --slot: #26344d; --frame: #8ccbef; --pick: #ffe14a;
+  --btn: #b4e4fa; --btn2: #d6f1fd; --ink: #165c86; --edge: #0f4466; --text: #f3f8ff; --dim: #a9bdd6; --bad: #ff6464;
+  --font: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  /* the names the page and the old skin read, pointed at the tokens above (v2 only) */
+  --g2-line:#3e5a80;--g2-ring:rgba(255,225,74,.35);--g2-drop:rgba(0,0,0,.35);--g2-pop:rgba(23,34,54,.97);--g2-bar:linear-gradient(#2b3d5b,#1f2d44);
+  --gs-bg:var(--navy);--gs-card:var(--navy2);--gs-line:var(--g2-line);--gs-acc:var(--pick);--gs-green:var(--pick);
+  --stage:#0c1422;--panel:var(--navy);--well:var(--slot);--well-on:var(--slot);--gold:var(--pick);
+  --g2-col:152px;--g2-dockh:80px;--g2-well:var(--slot);--g2-well2:var(--navy2);--g2-txt2:var(--text);--g2-th:90px}
+html.gs.v2 body{font-family:var(--font);font-weight:600}
+html.gs.v2 button,html.gs.v2 input,html.gs.v2 select{font-family:var(--font)}
+html.gs.v2 button:disabled{opacity:.45;cursor:default}
+html.gs.v2 #emotes{visibility:hidden;pointer-events:none;left:8px;right:auto;width:44px;height:44px;padding:0;overflow:hidden}   /* out of sight; it keeps its place so the chat console still starts under it */
+
+/* ---- top bar: the World Planner's backpack bar, its square light-blue buttons ---- */
+html.gs.v2 #gs-bar{gap:6px;background:var(--g2-bar);border-bottom:3px solid var(--frame)}
+html.gs.v2 .gs-brand b i{color:var(--pick)}
+html.gs.v2 #gs-bar .gs-ib{min-width:40px;height:40px;padding:0 8px;gap:6px;border:3px solid var(--edge);border-radius:12px;background:var(--btn);color:var(--ink);font-weight:800;box-shadow:0 3px 0 var(--g2-drop)}
+html.gs.v2 #gs-bar .gs-ib svg{width:20px;height:20px;stroke-width:2.6}
+html.gs.v2 #gs-bar .gs-ib:hover{background:var(--btn2)}
+html.gs.v2 #gs-bar .gs-ib:active{transform:translateY(2px);box-shadow:0 1px 0 var(--g2-drop)}
+html.gs.v2 #gs-bar .gs-ib.on{background:var(--pick)}
+html.gs.v2 #gs-bar .gs-ib:disabled{pointer-events:none}
+html.gs.v2 #gs-lang s{color:#5b8fb0}
+html.gs.v2 #gs-bar #gs-more{min-width:44px;height:44px;padding:0;border:0;background:none;box-shadow:none;color:var(--text);filter:drop-shadow(0 3px 0 var(--g2-drop))}   /* the game's own menu picture, as on the World Planner */
+html.gs.v2 #gs-bar #gs-more:active{box-shadow:none}
+html.gs.v2 #gs-menu #g2-m-lang,html.gs.v2 #gs-menu #g2-m-snd{display:none}
+@media (max-width:620px){
+  html.gs.v2 #gs-lang,html.gs.v2 #gs-snd{display:none}
+  html.gs.v2 #gs-menu #g2-m-lang,html.gs.v2 #gs-menu #g2-m-snd:not([hidden]){display:flex}
+  html.gs.v2 .gs-brand b{display:none}
+  html.gs.v2 #gs-bar{gap:5px}
+}
+/* the "more" menu and the toast: the World Planner's dialog and its toast */
+html.gs.v2 #gs-menu{border:3px solid var(--frame);border-radius:14px;background:var(--g2-pop);box-shadow:0 12px 40px rgba(0,0,0,.55);padding:8px}
+html.gs.v2 #gs-menu button{border-radius:8px;font-weight:600}
+html.gs.v2 #gs-menu button:hover{background:var(--navy2)}
+html.gs.v2 #gs-menu p b{color:var(--pick)}
+html.gs.v2 #gs-toast{background:var(--btn);color:var(--ink);border:3px solid var(--edge);border-radius:12px;padding:8px 14px;font-weight:800}
+html.gs.v2 #gs-keys kbd{background:rgba(15,25,42,.85);border-color:var(--g2-line)}
+html.gs.v2 #gs-foot{border-top:2px solid var(--g2-line)}
+html.gs.v2 #gs-show{border:2px solid var(--frame);background:rgba(15,25,42,.85);color:var(--text)}
+
+/* ---- the panel: gs_ui.js's tab row stays out of sight (the rail is the navigation) ---- */
+html.gs.v2 #panel{background:var(--g2-bar);border-top:3px solid var(--frame);border-radius:14px 14px 0 0}
+html.gs.v2 #gs-tabs{display:none}
+html.gs.v2 #gs-grab{height:22px}
+html.gs.v2 #gs-grab::before{background:var(--frame);opacity:.7}
+html.gs.v2 #gs-hide{top:-4px;right:4px;width:44px;height:30px;color:var(--dim)}
+html.gs.v2 #gs-hide::after{content:'';position:absolute;inset:-5px 0}
+.g2-pt{flex:none;font-size:15px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pick)}
+
+/* ---- the rail (base = the phone's: one row scrolled sideways, the group names small labels that stay in sight) ---- */
+#g2-rail{position:relative;display:flex;gap:12px;flex:none;padding:0 12px 8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;touch-action:pan-x;overscroll-behavior:contain}
+#g2-rail::-webkit-scrollbar,#g2-dock::-webkit-scrollbar,#g2-slots::-webkit-scrollbar{display:none}
+.g2-rg{flex:none;display:flex;flex-direction:column;gap:3px}
+.g2-rgl{position:sticky;left:0;align-self:flex-start;padding-right:8px;font-size:9.5px;line-height:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.g2-rgi{display:flex;gap:6px}
+.g2-re{position:relative;flex:none;display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 13px 0 10px;border:2px solid var(--g2-line);border-radius:99px;background:var(--slot);color:var(--dim);
+  cursor:pointer;font-size:12.5px;font-weight:800;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.g2-re svg{flex:none;width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.g2-re em{display:none;font-style:normal;font-size:10.5px;font-weight:600;color:var(--dim)}
+.g2-re:hover{border-color:var(--frame);color:#fff}
+.g2-re.on{border-color:var(--pick);color:var(--pick);box-shadow:inset 0 -3px 0 var(--pick)}
+
+/* ---- the dock: what is worn (the World Planner's inventory boxes) and the actions (base = the phone's: one row scrolled sideways) ---- */
+#g2-dock{position:relative;display:flex;align-items:center;gap:8px;flex:none;padding:10px 12px 2px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;touch-action:pan-x;overscroll-behavior:contain}
+#g2-slots{position:relative;display:flex;gap:6px;flex:none}
+.g2-div{flex:none;width:2px;height:44px;border-radius:1px;background:var(--g2-line)}
+#g2-acts{display:flex;align-items:center;gap:6px;flex:none}
+.g2-ab{flex:none;min-width:44px;height:44px;padding:0 9px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:3px solid var(--edge);border-radius:12px;background:var(--btn);color:var(--ink);
+  cursor:pointer;font-size:13px;font-weight:800;white-space:nowrap;box-shadow:0 3px 0 var(--g2-drop);-webkit-tap-highlight-color:transparent}
+.g2-ab svg{flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.g2-ab .l{display:none}
+.g2-ab:hover{background:var(--btn2)}
+.g2-ab:active{transform:translateY(2px);box-shadow:0 1px 0 var(--g2-drop)}
+.g2-ab.on{background:var(--pick)}
+.g2-ab:disabled{pointer-events:none}
+#g2-reset:hover{background:#ffb3b3;border-color:#a12a2a;color:#5a0d0d}
+.g2-slot{position:relative;flex:0 0 58px;height:60px}
+.g2-sb{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px 1px 1px;border:3px solid var(--g2-line);border-radius:8px;
+  background:var(--slot);color:var(--dim);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .12s,background-color .12s}
+div.g2-sb{cursor:default}                                     /* the slots show what is worn; only an item with settings is a button */
+button.g2-sb:hover{border-color:var(--pick);color:#fff}
+button.g2-sb:active{background:var(--navy2)}
+.g2-si{--k:.75;position:relative;flex:none;display:block;width:calc(48px * var(--k));height:calc(48px * var(--k))}
+.g2-si i{position:absolute;left:0;top:0;display:block;width:48px;height:48px;transform:scale(var(--k));transform-origin:0 0;image-rendering:pixelated;background-repeat:no-repeat}
+.g2-si svg{display:block;width:24px;height:24px;margin:calc(24px * var(--k) - 12px);fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;opacity:.6}
+.g2-sl{max-width:100%;font-size:10px;line-height:1.3;font-weight:800;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g2-slot.has .g2-sb{color:var(--text);border-color:var(--frame)}
+.g2-slot:not(.has) .g2-sb{border-style:dashed}
+.g2-slot.hc .g2-sb::before{content:'\2699';position:absolute;left:5px;top:4px;font:700 11px/1 system-ui,sans-serif;color:var(--pick)}
+.g2-sx{position:absolute;top:-5px;right:-5px;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center;border:2px solid var(--bad);border-radius:50%;
+  background:var(--navy);color:var(--bad);cursor:pointer}
+.g2-sx::after{content:'';position:absolute;inset:-10px}       /* a 40 px target around the small cross */
+.g2-sx svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:3.4;stroke-linecap:round}
+.g2-sx:hover{background:var(--bad);color:#fff}
+
+/* ---- the clothes entry: the title, the search, the list ---- */
+html.gs.v2 #pop-clothes{overflow:hidden}
+html.gs.v2 #pop-clothes>:not(#g2){display:none!important}
+#g2{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+.g2-hd{flex:none;display:flex;flex-direction:column;gap:8px;min-width:0}
+.g2-ttl{display:flex;align-items:center;gap:8px;min-height:24px;min-width:0}
+#g2-title{font-size:15px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pick);white-space:nowrap}
+#g2-count{font-size:13px;font-weight:600;color:var(--dim);flex:1;white-space:nowrap}
+.g2-q{position:relative;display:flex;align-items:center;flex:1;min-width:0}
+.g2-q>svg{position:absolute;left:13px;width:18px;height:18px;fill:none;stroke:var(--frame);stroke-width:2.4;stroke-linecap:round;pointer-events:none}
+#g2-q{width:100%;height:44px;padding:0 44px 0 38px;border:3px solid var(--frame);border-radius:10px;background:var(--slot);font-size:16px;font-weight:600;color:var(--text)}
+#g2-q::placeholder{color:var(--dim);opacity:.85}
+#g2-q:hover{filter:brightness(1.1)}
+html.gs.v2 #g2-q:focus,html.gs.v2 #g2-q:focus-visible{border-color:var(--pick);outline:0;box-shadow:0 0 0 2px var(--g2-ring)}
+#g2-qx{position:absolute;right:3px;width:40px;height:38px;padding:0;display:flex;align-items:center;justify-content:center;border:0;border-radius:8px;background:none;color:var(--dim);cursor:pointer}
+#g2-qx[hidden]{display:none}
+#g2-qx::after{content:'';position:absolute;inset:-1px 0}
+#g2-qx svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}
+#g2-qx:hover{color:#fff;background:var(--navy2)}
+#g2-sc{position:relative;flex:1;min-height:96px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;margin-right:-6px;padding-right:6px;scrollbar-width:thin;scrollbar-color:var(--g2-line) transparent}
+#g2-vg{position:relative}
+#g2-win{position:absolute;left:0;right:0;top:0;display:grid;gap:6px;will-change:transform}
+#g2-none{margin:16px 0;text-align:center;font-size:13px;font-weight:600;color:var(--dim)}
+#g2-none[hidden]{display:none}
+.g2-it{position:relative;height:var(--g2-th);min-width:0}
+.g2-w{width:100%;height:100%;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 1px 2px;border:3px solid var(--g2-line);border-radius:8px;background:var(--slot);
+  color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .12s,background-color .12s}
+.g2-w:hover{border-color:var(--frame)}
+.g2-w:active{background:var(--navy2)}
+.g2-w i,.g2-mi i{flex:none;display:block;width:48px;height:48px;image-rendering:pixelated;background-repeat:no-repeat}
+.g2-n{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;max-width:100%;font-size:10.5px;line-height:1.2;font-weight:600;text-align:center;overflow-wrap:anywhere}
+.g2-w em{max-width:100%;margin-top:auto;padding:1px 6px;border-radius:99px;background:var(--navy);color:var(--frame);font-style:normal;font-size:9px;line-height:1.3;font-weight:800;letter-spacing:.05em;
+  text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g2-it.on .g2-w{border-color:var(--pick);box-shadow:0 0 0 2px var(--g2-ring);color:#fff}
+.g2-it.hc::before{content:'\2699';position:absolute;z-index:1;left:7px;top:6px;font:700 12px/1 system-ui,sans-serif;color:var(--pick);pointer-events:none}
+.g2-it.nb .g2-w i{opacity:.4}
+.g2-it.nb::after{content:'';position:absolute;left:8px;bottom:8px;width:6px;height:6px;border-radius:50%;background:var(--bad);pointer-events:none}
+.g2-star{position:absolute;top:2px;right:2px;width:26px;height:26px;padding:4px;display:flex;align-items:flex-start;justify-content:flex-end;border:0;border-radius:0 6px 0 8px;background:none;color:#6f8db5;cursor:pointer}
+.g2-star svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linejoin:round}
+.g2-star:hover{color:var(--pick)}
+.g2-star.on{color:var(--pick)}
+.g2-star.on svg{fill:currentColor}
+@media (hover:hover) and (pointer:fine){.g2-star:not(.on){opacity:0}.g2-it:hover .g2-star,.g2-star:focus-visible{opacity:1}}
+@media (pointer:coarse){.g2-star{width:40px;height:40px;top:0;right:0;padding:6px}}
+
+/* "Favourites" and "Recently worn": one line each, inside the list's own scroll */
+.g2-row{margin-bottom:8px}
+.g2-rl{display:flex;align-items:center;gap:6px;min-height:24px;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--dim)}
+.g2-rl em{font-style:normal;font-weight:600;color:var(--dim);opacity:.8;flex:1}
+.g2-rl svg{flex:none;width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.g2-row[data-row=fav] .g2-rl svg{color:var(--pick);fill:currentColor}
+.g2-ed{height:24px;padding:0 10px;border:2px solid var(--navy2);border-radius:99px;background:var(--slot);color:var(--dim);cursor:pointer;font-size:11px;font-weight:800;position:relative}
+.g2-ed::after{content:'';position:absolute;inset:-8px -4px}
+.g2-ed:hover{border-color:var(--frame);color:#fff}
+.g2-rs{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;padding:3px 3px 5px;scrollbar-width:none;overscroll-behavior-x:contain}
+.g2-rs::-webkit-scrollbar{display:none}
+.g2-mi{position:relative;flex:none;width:54px;height:54px;padding:0;display:flex;align-items:center;justify-content:center;border:3px solid var(--g2-line);border-radius:6px;background:var(--slot);cursor:pointer}
+.g2-mi:hover{border-color:var(--frame)}
+.g2-mi.on{border-color:var(--pick);box-shadow:0 0 0 2px var(--g2-ring)}
+.g2-row.ed .g2-mi{border-color:var(--bad);border-style:dashed;box-shadow:none}
+.g2-row.ed .g2-mi::after{content:'\00d7';position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--bad);color:#fff;font:700 13px/18px system-ui,sans-serif;text-align:center}
+.g2-row.ed .g2-ed{background:var(--btn);border-color:var(--edge);color:var(--ink)}
+
+/* the settings of the chosen slot's item, under the list */
+#g2-cfgw{flex:none;display:flex;flex-direction:column;max-height:40%;border:2px solid var(--frame);border-radius:12px;background:var(--g2-pop);overflow:hidden}
+#g2-cfgw[hidden]{display:none}
+#g2-cfgh{flex:none;display:flex;align-items:center;gap:8px;width:100%;min-height:40px;padding:0 12px;border:0;background:none;color:var(--pick);cursor:pointer;font-size:13px;font-weight:800;text-align:left}
+#g2-cfgh span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#g2-cfgh svg{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+#g2-cfgh svg:last-child{color:var(--dim);transition:transform .15s}
+#g2-cfgh:hover{background:var(--navy2)}
+html.gs.v2 #g2-cfgh:focus-visible{outline-offset:-3px}
+#g2-cfgw.shut #g2-cfgh svg:last-child{transform:rotate(-90deg)}
+#g2-cfgw.shut #g2-cfg{display:none}
+#g2-cfgw.flash{animation:g2-flash .7s ease-out}                /* its slot was pressed: here it is */
+@keyframes g2-flash{0%{border-color:var(--pick);box-shadow:0 0 0 4px var(--g2-ring)}100%{border-color:var(--frame);box-shadow:0 0 0 0 transparent}}
+#g2-cfg{min-height:0;overflow-y:auto;overscroll-behavior:contain;border-top:2px solid var(--g2-line);scrollbar-width:thin;scrollbar-color:var(--g2-line) transparent}
+html.gs.v2 #g2-cfg .cfg{display:flex;flex-wrap:wrap;white-space:normal;margin:0;gap:8px;padding:10px 12px 12px;border-radius:0;background:none;font-size:13px}
+html.gs.v2 #g2-cfg .cfg button{min-height:40px;padding:0 12px;opacity:1;border:2px solid var(--g2-line);border-radius:8px;background:var(--slot);color:var(--text)}
+html.gs.v2 #g2-cfg .cfg button:hover{border-color:var(--frame)}
+html.gs.v2 #g2-cfg .cfg button.on{border-color:var(--pick);color:var(--pick);background:var(--slot)}
+html.gs.v2 #g2-cfg .cfg label{min-height:40px;gap:8px;flex-wrap:wrap;opacity:1;color:var(--dim)}
+html.gs.v2 #g2-cfg .cfg select{height:40px;max-width:100%;padding:0 8px;background:var(--slot);border:2px solid var(--frame);border-radius:8px;color:var(--text)}
+html.gs.v2 #g2-cfg .cfg input[type=color]{width:48px;height:36px;border:2px solid var(--frame);border-radius:8px;background:var(--slot)}
+html.gs.v2 #g2-cfg .cfg input[type=range]{flex:1 1 90px;min-width:90px;max-width:180px;height:36px;accent-color:var(--pick)}
+
+/* ---- the other panes (Look, Name): the page's own content in the same boxes, ONE section at a time. gs_ui2.js marks
+   each control with its section (data-sec) and the pane with the chosen one (data-show); nothing is moved ---- */
+html.gs.v2 #pop-skin[data-show="skin"]>[data-sec]:not([data-sec~="skin"]),html.gs.v2 #pop-skin[data-show="skin"] #gs-look>[data-sec]:not([data-sec~="skin"]){display:none!important}
+html.gs.v2 #pop-skin[data-show="hair"]>[data-sec]:not([data-sec~="hair"]),html.gs.v2 #pop-skin[data-show="hair"] #gs-look>[data-sec]:not([data-sec~="hair"]){display:none!important}
+html.gs.v2 #pop-skin[data-show="eyes"]>[data-sec]:not([data-sec~="eyes"]),html.gs.v2 #pop-skin[data-show="eyes"] #gs-look>[data-sec]:not([data-sec~="eyes"]){display:none!important}
+html.gs.v2 #pop-skin[data-show="fx"]>[data-sec]:not([data-sec~="fx"]),html.gs.v2 #pop-skin[data-show="fx"] #gs-look>[data-sec]:not([data-sec~="fx"]){display:none!important}
+html.gs.v2 #subtabs{display:none!important}                    /* (the page's own switch of the Name lists: pressed by the rail) */
+html.gs.v2 #pop-name:not([data-show="name"]) #pname{display:none!important}
+html.gs.v2 #pop-name[data-show="name"] #sub-title>:not([data-sec="name"]),html.gs.v2 #pop-name[data-show="titles"] #sub-title>:not([data-sec="titles"]){display:none!important}
+html.gs.v2 #pop-name[data-show="name"] #sub-role{display:flex!important}   /* Name = the field, the name colour, the role icon */
+html.gs.v2 #pop-name[data-show="name"] .sub{flex:none}
+html.gs.v2 #gs-look .chips{min-height:44px}
+html.gs.v2 .pane .h{margin-top:4px;font-weight:800;letter-spacing:.6px;color:var(--dim)}
+html.gs.v2 input.field{background:var(--slot);border:3px solid var(--frame);border-radius:10px;color:var(--text)}
+html.gs.v2 input.field::placeholder{color:var(--dim);opacity:.85}
+html.gs.v2 input.field:focus,html.gs.v2 input.field:focus-visible{border-color:var(--pick);outline:0;box-shadow:0 0 0 2px var(--g2-ring)}
+html.gs.v2 .chips button,html.gs.v2 .rows button,html.gs.v2 .own{border:2px solid var(--g2-line);border-radius:8px;background:var(--slot)}
+html.gs.v2 .chips button:hover,html.gs.v2 .rows button:hover,html.gs.v2 .own:hover,html.gs.v2 .tiles button:hover,html.gs.v2 #flags button:hover,html.gs.v2 .wxgrid button:hover{border-color:var(--frame)}
+html.gs.v2 .chips button.on,html.gs.v2 .rows button.on,html.gs.v2 .own.on{border-color:var(--pick);background:var(--slot);box-shadow:0 0 0 2px var(--g2-ring)}
+html.gs.v2 .chips button.on:hover,html.gs.v2 .rows button.on:hover,html.gs.v2 .own.on:hover,html.gs.v2 .tiles button.on:hover,html.gs.v2 #flags button.on:hover,html.gs.v2 .wxgrid button.on:hover{border-color:var(--pick)}
+html.gs.v2 .tiles button,html.gs.v2 #flags button{border:2px solid var(--g2-line);border-radius:6px;background:var(--slot)}
+html.gs.v2 .tiles button.on,html.gs.v2 #flags button.on{border-color:var(--pick);background:var(--slot)}
+html.gs.v2 #skins button{border-radius:8px}
+html.gs.v2 #subtabs{padding:4px;border-radius:12px;background:var(--slot);box-shadow:inset 0 0 0 2px var(--g2-line)}
+html.gs.v2 #subtabs button{border:2px solid transparent;border-radius:8px;font-weight:800}
+html.gs.v2 #subtabs button:hover{color:#fff}
+html.gs.v2 #subtabs button.on{background:var(--btn);border-color:var(--edge);color:var(--ink);box-shadow:none}
+html.gs.v2 .wxgrid button{border:3px solid var(--g2-line);border-radius:8px;background:var(--slot);color:var(--text)}
+html.gs.v2 .wxgrid button.on{border-color:var(--pick)}
+html.gs.v2 .wxgrid button i{background-color:var(--navy2)}
+html.gs.v2 .pane{scrollbar-width:thin;scrollbar-color:var(--g2-line) transparent}
+
+/* ---- on the stage: the emote button and its popover; the saved sets popover ---- */
+#g2-emob{position:fixed;z-index:6;top:calc(var(--gs-top) + 6px);left:max(8px,env(safe-area-inset-left));height:44px;min-width:44px;display:flex;align-items:center;gap:8px;padding:0 14px 0 10px;
+  border:3px solid var(--edge);border-radius:12px;background:var(--btn);color:var(--ink);box-shadow:0 3px 0 var(--g2-drop);cursor:pointer;font-size:13px;font-weight:800;-webkit-tap-highlight-color:transparent}
+#g2-emob[hidden]{display:none}
+#g2-emob svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
+#g2-emob:hover{background:var(--btn2)}
+#g2-emob:active{transform:translateY(2px);box-shadow:0 1px 0 var(--g2-drop)}
+#g2-emob.on{background:var(--pick)}
+.g2-pop{position:fixed;z-index:31;border:3px solid var(--frame);border-radius:14px;background:var(--g2-pop);color:var(--text);box-shadow:0 12px 40px rgba(0,0,0,.55)}
+.g2-pop[hidden]{display:none}
+#g2-emo{top:calc(var(--gs-top) + 58px);left:max(8px,env(safe-area-inset-left));width:min(340px,calc(100vw - 16px));max-height:min(52vh,420px);overflow-y:auto;overscroll-behavior:contain;padding:8px;scrollbar-width:thin;scrollbar-color:var(--g2-line) transparent}
+.g2-eg{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px}
+.g2-eg button{min-height:40px;padding:0 6px;border:2px solid var(--g2-line);border-radius:8px;background:var(--slot);color:var(--text);cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g2-eg button:hover{border-color:var(--frame);color:#fff}
+.g2-eg button:active{background:var(--navy2)}
+#g2-sets{top:calc(var(--gs-top) + 6px);right:max(8px,env(safe-area-inset-right));width:min(380px,calc(100vw - 16px));max-height:min(72vh,560px);display:flex;flex-direction:column;padding:14px;gap:10px}
+#g2-sets[hidden]{display:none}
+.g2-ph{display:flex;align-items:center;justify-content:space-between;flex:none}
+.g2-ph b{font-size:15px;font-weight:800;color:var(--pick)}
+.g2-px{width:40px;height:40px;margin:-8px -6px -8px 0;padding:0;display:flex;align-items:center;justify-content:center;border:0;border-radius:8px;background:none;color:var(--dim);cursor:pointer}
+.g2-px svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}
+.g2-px:hover{color:#fff;background:var(--navy2)}
+.g2-save{display:flex;gap:8px;flex:none;margin:0}
+.g2-save input,.g2-rn{flex:1;min-width:0;height:44px;padding:0 12px;border:3px solid var(--frame);border-radius:10px;background:var(--slot);color:var(--text);font-size:16px;font-weight:600}
+.g2-save input::placeholder{color:var(--dim);opacity:.85}
+html.gs.v2 .g2-save input:focus,html.gs.v2 .g2-rn:focus{border-color:var(--pick);outline:0;box-shadow:0 0 0 2px var(--g2-ring)}
+.g2-save button{flex:none;height:44px;padding:0 18px;border:3px solid var(--edge);border-radius:10px;background:var(--btn);color:var(--ink);cursor:pointer;font-weight:800;font-size:14px}
+.g2-save button:hover{background:var(--btn2)}
+.g2-list{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:6px;scrollbar-width:thin;scrollbar-color:var(--g2-line) transparent}
+.g2-em{margin:8px 4px;font-size:12px;line-height:1.45;font-weight:600;color:var(--dim)}
+.g2-set{display:flex;align-items:center;gap:6px;flex:none}
+.g2-ld{flex:1;min-width:0;min-height:56px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;padding:4px 10px;border:3px solid var(--g2-line);border-radius:8px;background:var(--slot);
+  color:var(--text);cursor:pointer;text-align:left}
+.g2-ld:hover{border-color:var(--frame)}
+.g2-ld b{max-width:100%;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g2-pv{display:flex;gap:2px;height:24px;overflow:hidden}
+.g2-pv:empty{display:none}
+.g2-pv i{flex:none;display:block;width:48px;height:48px;margin:0 -24px -24px 0;transform:scale(.5);transform-origin:0 0;image-rendering:pixelated;background-repeat:no-repeat}
+.g2-sm{flex:none;min-width:40px;height:40px;padding:0 8px;display:flex;align-items:center;justify-content:center;border:2px solid var(--g2-line);border-radius:8px;background:var(--slot);color:var(--dim);cursor:pointer;font-size:12px;font-weight:800}
+.g2-sm svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+.g2-sm:hover{color:#fff;border-color:var(--frame)}
+.g2-del:hover,.g2-del.ask{color:#fff;border-color:var(--bad);background:var(--bad)}
+.g2-del.ask{color:#5a0d0d;background:#ffb3b3;border-color:#a12a2a}
+
+/* ---- SHEET layout (phone): title and search share one line ---- */
+@media not all and (min-width:900px){
+  @media not all and (orientation:landscape) and (min-width:560px){
+    .g2-hd{flex-direction:row;align-items:center;gap:6px}
+    .g2-ttl{flex:none;flex-direction:column;align-items:flex-start;justify-content:center;gap:0;min-width:64px;max-width:38%;min-height:44px}
+    #g2-title{font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+    #g2-count{font-size:11.5px;flex:none}
+    #g2-cfgw{max-height:42%}
+    html.gs.v2 .pane{padding-top:0}
+    .g2-pt{font-size:13px}
+    .g2-ab .l{display:inline}
+    /* the two rows: one line each, the label a small cell at the left (its picture and the number; the words are its title) */
+    .g2-row{display:flex;align-items:stretch;gap:6px;margin-bottom:6px}
+    .g2-rl{flex:0 0 46px;flex-direction:column;justify-content:center;gap:2px;min-height:0;padding:2px 0;border-radius:8px;background:var(--navy);box-shadow:inset 0 0 0 2px var(--navy2);letter-spacing:0}
+    .g2-rl span{display:none}
+    .g2-rl em{flex:none;font-size:11px}
+    .g2-rl svg{width:16px;height:16px}
+    .g2-ed{height:20px;padding:0 6px;font-size:10px;text-transform:none}
+    .g2-ed::after{inset:-10px -4px}
+    .g2-rs{flex:1;min-width:0;padding:3px}
+    #g2-emo{max-height:158px}
+    .g2-eg{grid-template-columns:repeat(auto-fill,minmax(64px,1fr))}
+  }
+}
+
+/* ---- SIDE layout: the bar across the whole window; the rail a column at the left, the dock a bar under the scene ---- */
+@media (min-width:900px),(orientation:landscape) and (min-width:560px){
+  html.gs.v2 #gs-bar{right:0}
+  html.gs.v2 #stage{left:var(--g2-col);bottom:var(--g2-dockh)}
+  html.gs.v2 #panel{top:var(--gs-top);padding-top:0;background:var(--g2-bar);border-top:0;border-left:3px solid var(--frame);border-radius:0}
+  html.gs.v2 .pane{padding-top:12px}
+  html.gs.v2 #gs-menu{right:max(8px,env(safe-area-inset-right))}
+  html.gs.v2 #gs-toast{left:calc(var(--g2-col) + (100vw - var(--gs-side) - var(--g2-col)) / 2)}
+  html.gs.v2 #gs-keys{left:calc(var(--g2-col) + 14px);bottom:calc(var(--g2-dockh) + 12px);max-width:calc(100vw - var(--gs-side) - var(--g2-col) - 28px)}
+  html.gs.v2 .pad{bottom:calc(var(--g2-dockh) + 12px + env(safe-area-inset-bottom))}
+  html.gs.v2 .pad.left{left:calc(var(--g2-col) + 8px)}
+  html.gs.v2 #chatrow{margin-left:0}
+  html.gs.v2 #gs-show{border-right:0}
+  #g2-rail{position:fixed;z-index:7;left:0;top:var(--gs-top);bottom:0;width:var(--g2-col);display:block;padding:4px 6px 10px;overflow-x:hidden;overflow-y:auto;touch-action:pan-y;
+    background:var(--g2-bar);border-right:3px solid var(--frame)}
+  .g2-rg{display:block}
+  .g2-rgl{position:static;display:block;padding:9px 7px 3px;font-size:10px;line-height:13px;opacity:.85}
+  .g2-rgi{flex-direction:column;gap:1px}
+  .g2-re{display:flex;width:100%;height:27px;gap:8px;padding:0 7px 0 10px;border:0;border-radius:6px;background:none;color:var(--text);font-size:12.5px;font-weight:700;text-align:left}
+  .g2-re svg{width:16px;height:16px;color:var(--dim)}
+  .g2-re span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .g2-re em{display:inline}
+  .g2-re:hover{background:var(--navy2);color:#fff}
+  .g2-re.on{background:var(--slot);color:var(--pick);box-shadow:inset 3px 0 0 var(--pick)}
+  .g2-re.on svg,.g2-re.on em{color:var(--pick)}
+  #g2-dock{position:fixed;z-index:7;left:var(--g2-col);right:var(--gs-side);bottom:0;height:var(--g2-dockh);gap:8px;padding:0 10px 0 8px;overflow:hidden;touch-action:auto;
+    background:var(--g2-bar);border-top:3px solid var(--frame)}
+  #g2-slots{flex:1 1 auto;min-width:0;gap:4px;align-self:stretch;align-items:center;padding:6px 7px 0 2px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior:contain}
+  .g2-slot{flex:1 0 44px;max-width:64px;height:58px}
+  .g2-si{--k:.6667}
+  .g2-sb{padding:1px 1px 0;gap:0}
+  .g2-sl{font-size:9.5px}
+  .g2-ab{min-width:40px;height:40px;padding:0 7px}
+  #g2-acts{gap:5px}
+  #g2-emob,#g2-emo{left:calc(var(--g2-col) + 10px)}
+  #g2-sets{top:auto;bottom:calc(var(--g2-dockh) + 8px);right:calc(var(--gs-side) + 8px);max-height:min(70vh,520px)}
+}
+/* a narrow window: the rail's pictures alone (the names are their tooltips) */
+@media (min-width:900px) and (max-width:1099px),(orientation:landscape) and (min-width:560px) and (max-width:1099px){
+  html.gs.v2{--g2-col:54px}
+  .g2-rgl{height:2px;margin:6px 8px 5px;padding:0;font-size:0;line-height:0;border-radius:1px;background:var(--g2-line)}
+  .g2-rg:first-child .g2-rgl{display:none}
+  .g2-re{height:30px;padding:0;justify-content:center}
+  .g2-re span,.g2-re em{display:none}
+  .g2-re svg{width:18px;height:18px}
+}
+@media (min-width:1500px){.g2-ab .l{display:inline}.g2-ab{padding:0 10px}}
+@media (prefers-reduced-motion:reduce){.g2-sb,.g2-w,#g2-cfgh svg{transition:none}#g2-cfgw.flash{animation:none}}
+/* ---- LAND layout: a phone held sideways. <html class="g2-land"> is set by gs_ui2.js (landSet) while
+   (orientation:landscape) and (min-width:560px) and (max-height:520px) and (pointer:coarse) holds -- always inside the SIDE
+   layout above, whose rules it overrides; nothing here applies to a desktop window or a phone held upright.
+   PLAY (default): the scene fills the screen under a 40 px bar; no dock, rail, panel or zoom buttons.
+   CLOTHES (<html class="g2-land g2-wear">, the bar's Clothes button): the panel over the right part of the screen --
+   the dock on top (one row, scrolled sideways), the rail a column at its left, the chosen entry's content beside it;
+   the scene keeps the left part (--gs-side is the panel's width: the scene's box ends there). ---- */
+#g2-wearb,#g2-chat,#g2-lines,html.gs.v2 #gs-menu #g2-m-copy,html.gs.v2 #gs-menu #g2-m-dc,html.gs.v2 #gs-menu #g2-m-inst{display:none}
+html.gs.v2.g2-land{--gs-top:calc(40px + env(safe-area-inset-top));--gs-side:0px;--g2-col:0px;--g2-dockh:0px;--g2-lr:60px;--g2-lh:58px}
+html.gs.v2.g2-land.g2-wear{--gs-side:clamp(350px,60vw,640px)}
+/* the bar: the logo, the pages (#gs-nav, gs_ui.js), Clothes, "more" (which holds language, sound, copy link, Discord, install) */
+html.gs.v2.g2-land #gs-bar{gap:6px;border-bottom-width:2px;padding-left:max(8px,env(safe-area-inset-left))}
+html.gs.v2.g2-land .gs-brand{flex:none}
+html.gs.v2.g2-land .gs-brand svg{width:26px;height:26px}
+html.gs.v2.g2-land .gs-brand b,html.gs.v2.g2-land #gs-lang,html.gs.v2.g2-land #gs-copy,html.gs.v2.g2-land #gs-snd,html.gs.v2.g2-land #gs-dc,html.gs.v2.g2-land #gs-inst,
+html.gs.v2.g2-land #gs-show,html.gs.v2.g2-land .zoom,html.gs.v2.g2-land #gs-foot,html.gs.v2.g2-land #gs-menu #gs-m-chat,
+html.gs.v2.g2-land #stage #chatlog,html.gs.v2.g2-land #chatrow{display:none!important}
+html.gs.v2.g2-land #gs-nav{margin-left:4px;padding:2px;gap:2px}
+html.gs.v2.g2-land #gs-nav a{position:relative;min-width:40px;padding:7px 9px;font-size:12px;text-align:center}
+html.gs.v2.g2-land #gs-nav a::after{content:'';position:absolute;inset:-8px 0}       /* a 40 px target round each */
+html.gs.v2.g2-land #gs-bar #g2-wearb{display:inline-flex;position:relative;margin-left:auto;min-width:40px;height:32px;padding:0 12px 0 9px;gap:6px;border-width:2px;border-radius:10px;
+  background:var(--pick);color:#3a2c00;font-size:13px;box-shadow:0 2px 0 var(--g2-drop)}
+html.gs.v2.g2-land #gs-bar #g2-wearb.on{background:var(--btn);color:var(--ink)}
+html.gs.v2.g2-land #gs-bar #g2-wearb svg{width:18px;height:18px}
+html.gs.v2.g2-land #gs-bar #gs-more{position:relative;min-width:40px;height:34px}
+html.gs.v2.g2-land #gs-bar #gs-more .gs-hudimg{width:26px}
+html.gs.v2.g2-land #gs-bar #g2-wearb::after,html.gs.v2.g2-land #gs-bar #gs-more::after{content:'';position:absolute;inset:-6px -2px}
+html.gs.v2.g2-land #gs-menu{width:min(430px,calc(100vw - 16px));max-height:calc(100vh - var(--gs-top) - 12px);max-height:calc(100dvh - var(--gs-top) - 12px);overflow-y:auto;overscroll-behavior:contain}
+html.gs.v2.g2-land #gs-menu:popover-open{display:grid;grid-template-columns:1fr 1fr;gap:0 6px;align-content:start}
+html.gs.v2.g2-land #gs-menu.open{display:grid;grid-template-columns:1fr 1fr;gap:0 6px;align-content:start}
+html.gs.v2.g2-land #gs-menu p{grid-column:1/-1}
+html.gs.v2.g2-land #gs-menu #g2-m-lang,html.gs.v2.g2-land #gs-menu #g2-m-snd:not([hidden]),html.gs.v2.g2-land #gs-menu #g2-m-copy,html.gs.v2.g2-land #gs-menu #g2-m-dc:not([hidden]),
+html.gs.v2.g2-land #gs-menu #g2-m-inst:not([hidden]){display:flex}
+/* on the scene: emotes = one picture button (top left), the chat button (top right), the pads smaller and see-through in the bottom corners */
+html.gs.v2.g2-land #g2-emob{top:calc(var(--gs-top) + 6px);left:max(8px,env(safe-area-inset-left));width:42px;min-width:0;height:40px;padding:0;justify-content:center;opacity:.92}
+html.gs.v2.g2-land #g2-emob span{display:none}
+html.gs.v2.g2-land #g2-emo{top:calc(var(--gs-top) + 52px);left:max(8px,env(safe-area-inset-left));width:min(430px,calc(100vw - var(--gs-side) - 16px));max-height:calc(100vh - var(--gs-top) - 60px);max-height:calc(100dvh - var(--gs-top) - 60px)}
+html.gs.v2.g2-land #gs-chatb{top:calc(var(--gs-top) + 4px);right:calc(var(--gs-side) + max(8px,env(safe-area-inset-right)))}
+html.gs.v2.g2-land.g2-wear #gs-chatb,html.gs.v2.g2-land.g2-wear #g2-lines{display:none}
+html.gs.v2.g2-land .pad{bottom:calc(8px + env(safe-area-inset-bottom));gap:6px}
+html.gs.v2.g2-land .pad.left{left:max(8px,env(safe-area-inset-left))}
+html.gs.v2.g2-land .pad.right{right:calc(var(--gs-side) + max(8px,env(safe-area-inset-right)))}
+html.gs.v2.g2-land.g2-wear .pad.right{right:calc(var(--gs-side) + 8px)}
+html.gs.v2.g2-land .pad img{height:52px}
+html.gs.v2.g2-land.g2-wear .pad img{height:42px}
+@media (max-width:640px){html.gs.v2.g2-land.g2-wear .pad [data-key=punch]{display:none}}   /* (a small phone: the scene's part is too narrow for four pads; a press on the scene punches) */
+html.gs.v2.g2-land .pad button{opacity:.7}
+html.gs.v2.g2-land .pad button.down{opacity:1}
+/* the chat: one field under the bar, and the console's new lines for a few seconds each (gs_ui2.js chatBox, chatPoll) */
+html.gs.v2.g2-land #g2-chat:not([hidden]){display:flex;position:fixed;z-index:9;top:calc(var(--gs-top) + 6px);left:calc(max(8px,env(safe-area-inset-left)) + 50px);right:calc(max(8px,env(safe-area-inset-right)) + 62px);
+  max-width:520px;margin:0 auto;gap:6px}
+#g2-chatin{flex:1;min-width:0;height:40px;padding:0 12px;border:3px solid var(--frame);border-radius:10px;background:rgba(23,34,54,.94);color:var(--text);font-size:16px;font-weight:600}
+#g2-chatin::placeholder{color:var(--dim);opacity:.85}
+html.gs.v2 #g2-chatin:focus,html.gs.v2 #g2-chatin:focus-visible{border-color:var(--pick);outline:0;box-shadow:0 0 0 2px var(--g2-ring)}
+#g2-chat button{flex:none;width:44px;height:40px;padding:0;display:flex;align-items:center;justify-content:center;border:3px solid var(--edge);border-radius:10px;background:var(--btn);color:var(--ink);cursor:pointer}
+#g2-chat button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+html.gs.v2.g2-land #g2-lines{display:flex;flex-direction:column;align-items:flex-start;gap:3px;position:fixed;z-index:5;top:calc(var(--gs-top) + 9px);left:calc(max(8px,env(safe-area-inset-left)) + 52px);
+  max-width:min(62vw,calc(100vw - 190px));pointer-events:none}
+html.gs.v2.g2-land #g2-lines.dn{top:calc(var(--gs-top) + 52px)}
+#g2-lines p{margin:0;padding:3px 9px;border-radius:8px;background:rgba(12,20,34,.6);color:#fff;font-size:12.5px;line-height:1.3;font-weight:600;text-shadow:0 1px 1px rgba(0,0,0,.6);overflow-wrap:anywhere;
+  animation:g2-line 6s linear forwards}
+@keyframes g2-line{0%{opacity:0}4%{opacity:1}78%{opacity:1}100%{opacity:0}}
+/* CLOTHES: the panel, the dock on its top edge, the rail down its left edge */
+html.gs.v2.g2-land:not(.g2-wear) #panel,html.gs.v2.g2-land:not(.g2-wear) #g2-rail,html.gs.v2.g2-land:not(.g2-wear) #g2-dock{display:none!important}
+html.gs.v2.g2-land #panel{padding:var(--g2-lh) env(safe-area-inset-right) 0 var(--g2-lr);pointer-events:auto}   /* (pointer-events: the upright phone's "menu hidden" state, .gs-hid, does not count here) */
+html.gs.v2.g2-land #g2-dock{z-index:8;left:calc(100vw - var(--gs-side) + 3px);right:env(safe-area-inset-right);top:var(--gs-top);bottom:auto;height:var(--g2-lh);gap:8px;padding:0 10px 0 8px;
+  overflow-x:auto;overflow-y:hidden;touch-action:pan-x;background:none;border-top:0;border-bottom:2px solid var(--g2-line)}
+html.gs.v2.g2-land #g2-slots{flex:none;align-self:auto;gap:3px;padding:6px 0 0;overflow:visible}
+html.gs.v2.g2-land .g2-slot{flex:0 0 44px;max-width:none;height:46px}
+html.gs.v2.g2-land .g2-slot.has{flex-basis:56px}              /* (a worn item: room for its picture's press -- settings -- beside the cross's 40 px) */
+html.gs.v2.g2-land .g2-sx::after{inset:-9px}
+html.gs.v2.g2-land .g2-si{--k:.6}
+html.gs.v2.g2-land .g2-sl{font-size:9px}
+html.gs.v2.g2-land .g2-div{height:36px}
+html.gs.v2.g2-land .g2-ab{min-width:40px;height:40px;padding:0 7px}
+html.gs.v2.g2-land .g2-ab .l{display:none}
+html.gs.v2.g2-land #g2-rail{z-index:8;left:calc(100vw - var(--gs-side) + 3px);top:calc(var(--gs-top) + var(--g2-lh));bottom:0;width:var(--g2-lr);padding:3px 4px calc(8px + env(safe-area-inset-bottom));
+  background:none;border-right:2px solid var(--g2-line)}
+html.gs.v2.g2-land .g2-rgl{display:block;height:2px;margin:5px 8px;padding:0;font-size:0;line-height:0;border-radius:1px;background:var(--g2-line)}
+html.gs.v2.g2-land .g2-rg:first-child .g2-rgl{display:none}
+html.gs.v2.g2-land .g2-re{flex-direction:column;justify-content:center;height:44px;gap:2px;padding:0 1px}
+html.gs.v2.g2-land .g2-re svg{width:18px;height:18px}
+html.gs.v2.g2-land .g2-re span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;flex:none;max-width:100%;font-size:9.5px;line-height:1.05;font-weight:700;white-space:normal;text-align:center;overflow:hidden}
+html.gs.v2.g2-land .g2-re em{display:none}
+html.gs.v2.g2-land .g2-re.on{box-shadow:inset 3px 0 0 var(--pick)}
+html.gs.v2.g2-land .pane{padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
+html.gs.v2.g2-land #g2{gap:6px}
+html.gs.v2.g2-land .g2-hd{flex-direction:row;align-items:center;gap:6px}
+html.gs.v2.g2-land .g2-ttl{flex:none;flex-direction:column;align-items:flex-start;justify-content:center;gap:0;min-width:64px;max-width:38%;min-height:40px}
+html.gs.v2.g2-land #g2-title{font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+html.gs.v2.g2-land #g2-count{font-size:11.5px;flex:none}
+html.gs.v2.g2-land #g2-q{height:40px}
+html.gs.v2.g2-land #g2-qx{height:34px}
+html.gs.v2.g2-land .g2-pt{font-size:13px}
+html.gs.v2.g2-land .g2-row{display:flex;align-items:stretch;gap:6px;margin-bottom:6px}
+html.gs.v2.g2-land .g2-rl{flex:0 0 46px;flex-direction:column;justify-content:center;gap:2px;min-height:0;padding:2px 0;border-radius:8px;background:var(--navy);box-shadow:inset 0 0 0 2px var(--navy2);letter-spacing:0}
+html.gs.v2.g2-land .g2-rl span{display:none}
+html.gs.v2.g2-land .g2-rl em{flex:none;font-size:11px}
+html.gs.v2.g2-land .g2-rl svg{width:16px;height:16px}
+html.gs.v2.g2-land .g2-ed{height:20px;padding:0 6px;font-size:10px;text-transform:none}
+html.gs.v2.g2-land .g2-ed::after{inset:-10px -4px}
+html.gs.v2.g2-land .g2-rs{flex:1;min-width:0;padding:3px}
+/* the settings box: shut = its one title line under the list; open = it takes the list's place (gs_ui2.js cfg: .g2-cfgo) */
+html.gs.v2.g2-land #g2-cfgw{max-height:none}
+html.gs.v2.g2-land #g2.g2-cfgo #g2-sc{display:none}
+html.gs.v2.g2-land #g2.g2-cfgo #g2-cfgw{flex:1;min-height:0}
+html.gs.v2.g2-land #g2-sets{top:calc(var(--gs-top) + 6px);bottom:auto;right:max(8px,env(safe-area-inset-right));max-height:calc(100vh - var(--gs-top) - 14px);max-height:calc(100dvh - var(--gs-top) - 14px);padding:10px;gap:8px}
+html.gs.v2.g2-land #gs-toast{top:calc(var(--gs-top) + 50px)}
+
+/* the World page (/world/, gs_ui.js worldPage: <html class="gs-worldpage">): nothing of the Set page's v2 shows, the scene takes the room */
+html.gs-worldpage #g2-rail,html.gs-worldpage #g2-dock,html.gs-worldpage #g2-slots,html.gs-worldpage #g2-sets{display:none!important}
+html.gs.v2.gs-worldpage{--g2-col:0px;--g2-dockh:0px}
+
+/* r63: the character canvas must not ease to its place (0.22 s of #stage canvas) -- the shadow is drawn at once, so the body trailed it after every fit() */
+.gs #stage #char{transition:none}

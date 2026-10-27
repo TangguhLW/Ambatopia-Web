@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Growtopia Simulator</title>
+<meta name="description" content="Try Growtopia outfits on a character before you buy them: clothes, skin, name tag, weather and emotes. Works on phone and PC.">
+<meta name="theme-color" content="#12141b">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Growtopia Simulator">
+<meta property="og:title" content="Growtopia Simulator">
+<meta property="og:description" content="Try Growtopia outfits on a character before you buy them: clothes, skin, name tag, weather and emotes. Works on phone and PC.">
+<meta property="og:url" content="https://growtopiasimulator.com/">
+<link rel="canonical" href="https://growtopiasimulator.com/">
+<style>
+:root{--stage:#22252e;--panel:#191c25;--edge:#343a4d;--well:#2a2f3e;--well-on:#3a3320;--text:#eef0f5;--dim:#9aa0b2;--gold:#ffd166;--side:400px;--sheet:54vh}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--stage);color:var(--text);font:600 14px/1.4 system-ui,Segoe UI,sans-serif}
+button,input{font:inherit;color:inherit}
+
+/* The preview owns every pixel the editing panel does not use, so the panel never covers the character.
+   The canvas is moved and scaled inside it: that is the "camera". */
+#stage{position:fixed;inset:0;overflow:hidden;background:#22252e center/cover no-repeat;touch-action:none}   /* touch-action: a pinch zooms the scene, not the page */
+/* the character canvas is moved every frame while walking or jumping: a layer of its own, so the stage behind it is not painted again */
+#stage #char{will-change:transform}
+/* the ground the character stands on: a row of grass-topped dirt, dirt below (the game's own tiles) */
+.fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;image-rendering:pixelated}
+#ground{position:absolute;left:0;right:0;bottom:0;pointer-events:none;image-rendering:pixelated;background-image:url(atlas/ui/dirt_top.png),url(atlas/ui/dirt.png);background-repeat:repeat-x,repeat}
+.wxgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;padding:10px 2px}
+.wxgrid button{border:2px solid transparent;border-radius:8px;padding:0;background:#15171d;color:#dfe3ea;cursor:pointer;overflow:hidden;font:inherit;font-size:11px}
+.wxgrid button.on{border-color:#f1b740}
+.wxgrid button i{display:block;aspect-ratio:16/9;background:#22252e center/cover no-repeat}
+.wxgrid button span{display:block;padding:4px 4px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.panel-open #stage{right:var(--side)}
+#stage canvas{position:absolute;image-rendering:pixelated;transition:left .22s,top .22s,width .22s,height .22s}
+#stage #petc,#stage #petf,#stage #petp{transition:none;pointer-events:none}   /* the pets move every frame: no easing on top of it */
+#stage #petc[hidden],#stage #petf[hidden],#stage #petp[hidden]{display:none}
+/* kites and balloons: one canvas over the whole preview, so the string can run as far as it likes */
+#stage #kitec{left:0;top:0;width:100%;height:100%;transition:none;pointer-events:none;image-rendering:auto}
+#stage #kitec[hidden]{display:none}
+/* the settings of an item that has some (Rift Cape: colours, collar, aura) */
+.cfg{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:-2px 0 8px;padding:8px;border-radius:10px;background:rgba(255,255,255,.04);font-size:12px}
+.cfg button{padding:5px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:transparent;cursor:pointer;opacity:.6}
+.cfg button.on{opacity:1;border-color:#ffd166;color:#ffd166}
+.cfg label{display:flex;align-items:center;gap:5px;opacity:.85}
+.cfg select{background:#1b1e26;border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:4px 6px}
+.cfg input[type=color]{width:30px;height:24px;padding:0;border:0;background:none;cursor:pointer}
+
+.top{position:fixed;top:12px;left:14px;right:14px;display:flex;align-items:center;gap:8px;pointer-events:none}
+body.panel-open .top{right:calc(var(--side) + 14px)}
+.top h1{margin:0;font-size:16px;opacity:.85;flex:1}
+.top button{pointer-events:auto}
+.btn{background:rgba(24,27,36,.92);border:1px solid var(--edge);border-radius:10px;padding:8px 14px;cursor:pointer}
+.btn:hover{border-color:var(--dim)}
+.btn.on{border-color:var(--gold);color:var(--gold)}
+.btn[hidden]{display:none}
+
+.dock{position:fixed;left:0;right:0;bottom:calc(18px + env(safe-area-inset-bottom));display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:0 12px}
+.dock .btn{padding:11px 20px;font-size:15px;border-radius:14px}
+body.panel-open .dock{display:none}
+
+/* walk / jump / punch buttons, like the game's touch controls */
+.pad{position:fixed;bottom:calc(84px + env(safe-area-inset-bottom));display:flex;gap:14px;align-items:center}
+.pad.left{left:16px}
+.pad.right{right:16px}
+body.panel-open .pad.right{right:calc(var(--side) + 16px)}
+.pad button{background:none;border:0;padding:0;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;opacity:.85}
+.pad button.down{opacity:1;transform:scale(.93)}
+.pad img{display:block;height:88px;pointer-events:none;image-rendering:auto}
+/* zoom in / out: held like the game's zoom keys (the phone client has no button for it: pinch, wheel, or these) */
+/* place: the top right, under Copy link / Full screen, beside the emote bar -- not over the play area where the avatar walks */
+.zoom{position:fixed;right:14px;top:52px;display:flex;flex-direction:row;gap:6px;z-index:6}
+.zoom .btn{width:38px;height:38px;padding:0;font-size:22px;line-height:1;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.zoom .btn.down{border-color:var(--gold);color:var(--gold)}
+body.panel-open .zoom{display:none}   /* the zoom is the play view's (the game's camera); a panel's own view is not zoomed */
+
+/* the editing panel: a column on the right (desktop) or a sheet at the bottom (phone) */
+#panel{position:fixed;top:0;right:0;bottom:0;width:var(--side);background:var(--panel);border-left:1px solid var(--edge);display:flex;flex-direction:column}
+#panel[hidden]{display:none}
+#panel header{display:flex;align-items:center;gap:6px;padding:10px 10px 0}
+.tabs{display:flex;gap:4px;flex:1;background:var(--well);border-radius:11px;padding:4px}
+.tabs button{flex:1;background:none;border:0;border-radius:8px;padding:8px 0;cursor:pointer;color:var(--dim)}
+.tabs button.on{background:var(--panel);color:var(--text);box-shadow:0 0 0 1px var(--edge)}
+#subtabs{flex:none}
+.x{background:none;border:0;color:var(--dim);cursor:pointer;font-size:24px;line-height:1;padding:2px 8px}
+.pane{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;padding:14px;overflow:auto}
+.pane[hidden],.sub[hidden]{display:none}
+.h{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.note{font-size:11.5px;color:var(--dim);margin:0}
+/* build trait N (the game-accurate name tag, preview only): body.nt shows the .nt-on texts and hides the .nt-off ones */
+.nt-on{display:none!important}
+body.nt .nt-on{display:revert!important}
+body.nt .chips.nt-on{display:flex!important}
+body.nt .tiles.nt-on{display:grid!important}
+body.nt .nt-off{display:none!important}
+input.field{width:100%;background:var(--well);border:1px solid var(--edge);border-radius:10px;padding:10px 12px;font-size:16px}
+.sub{display:flex;flex-direction:column;gap:12px;flex:1;min-height:0}
+
+/* choices: big, one clear tap each */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{display:flex;align-items:center;gap:8px;background:var(--well);border:1px solid var(--edge);border-radius:12px;padding:8px 13px;cursor:pointer}
+/* chosen = gold outline, not a gold fill: the label keeps the colours of the title it previews */
+.chips button.on{background:var(--well-on);border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.chips i{display:block;flex:none;image-rendering:pixelated}
+/* role skins: a card each, with a large white face so the marks of the skin are easy to see */
+#roles{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+#roles button{flex-direction:column;gap:6px;padding:10px 6px 8px;font-size:13px}
+#roles canvas{width:78px;height:78px;image-rendering:pixelated;background:#11131a;border-radius:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:6px}
+.tiles button{aspect-ratio:1;display:grid;place-items:center;background:var(--well);border:1px solid transparent;border-radius:10px;cursor:pointer;padding:0;min-width:0;overflow:hidden}
+.tiles button.on{border-color:var(--gold);background:var(--well-on)}
+.tiles i{display:block;image-rendering:pixelated}
+.tiles span{font-size:11px;color:var(--dim)}
+#sub-wrench,#sub-guild,#sub-title{overflow:auto}
+.rows{display:flex;flex-direction:column;gap:6px}
+.rows button{display:flex;align-items:center;justify-content:space-between;background:var(--well);border:1px solid var(--edge);border-radius:12px;padding:11px 14px;cursor:pointer;text-align:left}
+.rows button.on{border-color:var(--gold);background:var(--well-on)}
+.rows b{font-weight:700}
+
+#flags{flex:1;min-height:120px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:6px;align-content:start}
+#flags button{display:flex;flex-direction:column;align-items:center;gap:5px;background:var(--well);border:1px solid transparent;border-radius:10px;padding:9px 4px 6px;cursor:pointer;min-width:0}
+#flags button.on{border-color:var(--gold);background:var(--well-on)}
+#flags i{display:block;image-rendering:pixelated}
+#flags span{font-size:11px;color:var(--dim);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#flags button.none{justify-content:center;font-size:12px;color:var(--dim)}
+
+#skins{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+#skins button{aspect-ratio:1;border:0;border-radius:12px;cursor:pointer}
+#skins button.on{outline:3px solid var(--gold);outline-offset:2px}
+.own{display:flex;align-items:center;gap:12px;cursor:pointer;background:var(--well);border:1px solid var(--edge);border-radius:12px;padding:8px 12px}
+.own input{width:44px;height:32px;padding:0;border:0;border-radius:8px;background:none;cursor:pointer}
+.own.on{border-color:var(--gold)}
+
+#wearing{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:24vh;overflow:auto;flex:none}
+#wearing:empty{display:none}
+.worn{display:flex;align-items:center;gap:8px;background:var(--well);border-radius:8px;padding:6px 8px;min-width:0}
+.worn b{display:block;font-size:10px;letter-spacing:.06em;color:var(--gold);text-transform:uppercase}
+.worn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.worn div{min-width:0;flex:1}
+.worn button{background:none;border:0;color:var(--dim);cursor:pointer;font-size:16px}
+#filters{display:flex;flex-wrap:wrap;gap:5px}
+#filters button{background:none;border:1px solid var(--edge);border-radius:999px;padding:3px 11px;font-size:12px;color:var(--dim);cursor:pointer}
+#filters button.on{background:var(--gold);color:#2a2000;border-color:var(--gold)}
+#grid{flex:1;min-height:120px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:6px;align-content:start}
+.it{aspect-ratio:1;background:var(--well);border:1px solid transparent;border-radius:8px;cursor:pointer;display:grid;place-items:center;padding:0;content-visibility:auto;contain-intrinsic-size:60px}
+.it:hover{border-color:var(--dim)}
+.it.on{background:var(--well-on);border-color:var(--gold)}
+.it.nb{position:relative}
+.it.nb::after{content:'';position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:#e08a2e}
+.it.gs{position:relative}
+.it.gs::before,.gsl b{content:'?';position:absolute;top:3px;left:3px;font:700 9px/1 system-ui,sans-serif;color:#fff;background:#7a5cff;border-radius:3px;padding:2px 3px}
+.gsl b{position:static;display:inline-block;margin-right:4px}
+.worn em.gsn{display:block;font-style:normal;font-size:10px;color:#a996ff;white-space:normal}
+.it i{display:block;width:48px;height:48px;image-rendering:pixelated;background-repeat:no-repeat}
+
+@media(max-width:760px){
+  body.panel-open #stage{right:0;bottom:var(--sheet)}
+  body.panel-open .pad{display:none}            /* no room beside the sheet; close it to move */
+  body.panel-open .zoom{display:none}
+  .zoom{right:10px}
+  .pad{gap:6px}
+  .pad.left{left:8px}
+  .pad.right{right:8px}
+  .pad img{height:74px}
+  body.panel-open .top{right:14px}
+  #panel{top:auto;left:0;width:auto;height:var(--sheet);border-left:0;border-top:1px solid var(--edge);border-radius:16px 16px 0 0}
+  .top{gap:6px;left:10px;right:10px}
+  .top h1{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .top .btn{padding:7px 10px;font-size:13px;white-space:nowrap}
+  body.panel-open #full,body.panel-open .top h1{display:none}   /* room for the Full body switch */
+  body.panel-open .top{justify-content:flex-end}
+  .pane{padding:12px}
+  #wearing{display:flex;overflow-x:auto;max-height:none}
+  .worn{flex:0 0 150px}
+  #pop-clothes .note{display:none}
+}
+/* the emotes: ONE bar under the top row, swiped sideways (the chat faces follow the /commands in the same bar);
+   it ends before the zoom buttons at the right and never reaches the walk / jump pads or the dock */
+#emotes{position:fixed;left:8px;right:108px;top:52px;z-index:6;display:flex;flex-wrap:nowrap;align-items:center;gap:5px;height:38px;padding-right:26px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-x;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 26px),transparent)}
+#emotes[hidden]{display:none}
+#emotes::-webkit-scrollbar{display:none}
+#emotes button{flex:none;height:36px;border:0;border-radius:9px;padding:0 11px;background:rgba(21,23,29,.82);color:#dfe3ea;font:inherit;font-size:13px;white-space:nowrap;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent}
+#emotes button:hover{background:#2a2f3a}
+#emotes .chat{display:contents}   /* the chat emoticon faces: in the same bar, after the /commands */
+#emotes .chat button{min-width:36px;padding:0 9px}
+@media(min-width:1100px) and (min-height:600px){   /* a wide screen: two rows, everything in sight */
+  #emotes{flex-wrap:wrap;height:auto;max-height:77px;overflow-y:auto;padding-right:0;-webkit-mask-image:none;mask-image:none}
+}
+body.panel-open #emotes{display:none}
+/* the chat (shown only where data/chat.json is published: the preview). #chatc: the talk bubble, a screen-space canvas
+   over the scene; #chatlog: the console (log + input row) under the emote bar, beneath the bubble; #chatrow: the real
+   text field laid over the console's input row (the client's row: no box of its own, white text, no send button) */
+#stage #chatc,#stage #chatlog{transition:none;image-rendering:auto}
+#stage #chatlog{pointer-events:auto;touch-action:none}
+#stage #chatc[hidden],#stage #chatlog[hidden],body.panel-open #stage #chatlog{display:none}
+#chatrow{position:fixed;z-index:6;margin:0;width:0;height:0;pointer-events:none}
+#chatrow[hidden],body.panel-open #chatrow{display:none}
+#chatin{display:block;box-sizing:content-box;margin:0;padding:0;border:0;border-radius:0;outline:0;background:transparent;color:#fff;caret-color:#fff;font-family:'Century Gothic','Trebuchet MS',system-ui,sans-serif;font-weight:400;transform-origin:0 0;pointer-events:auto}
+#chatin::placeholder{color:#fff;opacity:1}
+/* a narrow phone: the dock in ONE row (it wrapped under the walk / jump pads), and at 360 px the four pad pictures side by side */
+@media(max-width:480px){
+  .dock{flex-wrap:nowrap;gap:6px;padding:0 8px}
+  .dock .btn{padding:10px 9px;font-size:13px;border-radius:12px;white-space:nowrap}
+}
+@media(max-width:400px){
+  .pad img{height:60px}
+}
+/* preview (body.nt), owner 2026-10-07: an open panel hides nothing -- pads, zoom, emotes and chat keep working */
+body.nt.panel-open .zoom{display:flex;right:calc(var(--side) + 14px)}
+body.nt.panel-open #emotes:not([hidden]){display:flex;right:calc(var(--side) + 108px)}
+body.nt.panel-open #stage #chatlog:not([hidden]),body.nt.panel-open #chatrow:not([hidden]){display:block}
+@media(max-width:760px){
+  body.nt.panel-open .pad{display:flex;bottom:calc(var(--sheet) + 8px)}
+  body.nt.panel-open .zoom{right:10px}
+  body.nt.panel-open #emotes:not([hidden]){right:108px}
+}
+</style>
+<script>/* the Growtopia Simulator skin (gs_ui.css + gs_ui.js): only on that host, or ?ui=gs on localhost; elsewhere nothing is loaded */
+(function(){var h=location.hostname,d='growtopiasimulator.com';if(h===d||h.slice(-d.length-1)==='.'+d||((h==='localhost'||h==='127.0.0.1')&&/[?&]ui=gs(&|$)/.test(location.search))){window.GS=1;window.GS2=1;var c='gs v2';try{localStorage.removeItem('gs_v2')}catch(e){}/* UI v2 (gs_ui2.css + gs_ui2.js) for everybody: the old skin is no longer offered (owner 2026-10-13) */document.documentElement.className=c;document.title='Growtopia Simulator';document.write('<link rel="stylesheet" href="gs_ui.css?v=b242a3e81c">'+(window.GS2?'<link rel="stylesheet" href="gs_ui2.css?v=061c01caf1">':''))}})()</script>
+</head>
+<body>
+<div id="stage"><canvas id="wxb" class="fx"></canvas><div id="ground"></div><canvas id="wt" class="fx" hidden></canvas><canvas id="fxb" class="fx"></canvas><canvas id="char" width="1120" height="896"></canvas><canvas id="petc" width="128" height="128" hidden></canvas><canvas id="petf" width="128" height="128" hidden></canvas><canvas id="petp" width="128" height="128" hidden></canvas><canvas id="kitec" hidden></canvas><canvas id="fxf" class="fx"></canvas><canvas id="fxa" class="fx" style="mix-blend-mode:plus-lighter"></canvas><canvas id="wtf" class="fx" hidden></canvas><canvas id="wxf" class="fx"></canvas><canvas id="chatlog" hidden></canvas><canvas id="chatc" class="fx" hidden></canvas></div>
+
+<div class="top">
+  <h1>Growtopia Simulator</h1>
+  <button class="btn" id="viewfull" hidden title="Switch between the close-up and the whole character">Full body</button>
+  <button class="btn" id="chattog" hidden title="Show / hide the chat console (Enter opens it)">Chat</button>
+  <button class="btn" id="copy" title="Copy a link to this set">Copy link</button>
+  <button class="btn" id="full" title="Full screen">Full screen</button>
+</div>
+
+<div id="emotes" hidden></div>
+<form id="chatrow" hidden autocomplete="off"><input id="chatin" type="text" maxlength="120" enterkeyhint="send" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Chat"></form>
+<div class="dock">
+  <button class="btn" data-open="name">Name</button>
+  <button class="btn" data-open="skin">Skin</button>
+  <button class="btn" data-open="clothes">Clothes</button>
+  <button class="btn" data-open="weather">Weather</button>
+  <button class="btn" id="clear" title="Take everything off">Clear</button>
+</div>
+
+
+<div class="pad left">
+  <button data-key="left" title="Walk left (A or left arrow)"><img src="atlas/ui/left_arrow.png" alt="Left" draggable="false"></button>
+  <button data-key="right" title="Walk right (D or right arrow)"><img src="atlas/ui/right_arrow.png" alt="Right" draggable="false"></button>
+</div>
+<div class="pad right">
+  <button data-key="jump" title="Jump (Space)"><img src="atlas/ui/jump_icon.png" alt="Jump" draggable="false"></button>
+  <button data-key="punch" title="Punch (F)"><img src="atlas/ui/punch_icon.png" alt="Punch" draggable="false"></button>
+</div>
+
+<div class="zoom">
+  <button class="btn" data-zoom="1" title="Zoom in (hold; + key, mouse wheel up, pinch out)">+</button>
+  <button class="btn" data-zoom="-1" title="Zoom out (hold; - key, mouse wheel down, pinch in)">&minus;</button>
+</div>
+
+<aside id="panel" hidden>
+  <header>
+    <div class="tabs">
+      <button data-tab="name">Name</button>
+      <button data-tab="skin">Skin</button>
+      <button data-tab="clothes">Clothes</button>
+      <button data-tab="weather">Weather</button>
+    </div>
+    <button class="x" data-close title="Close">&times;</button>
+  </header>
+
+  <section class="pane" id="pop-name" hidden>
+    <input class="field" id="pname" maxlength="18" placeholder="Name" spellcheck="false">
+    <div class="tabs" id="subtabs">
+      <button data-sub="title">Title</button>
+      <button data-sub="role">Role</button>
+      <button data-sub="guild">Guild</button>
+      <button data-sub="flag">Flag</button>
+      <button data-sub="wrench">Wrench</button>
+    </div>
+    <div class="sub" id="sub-title">
+      <span class="h nt-on">Name colour &middot; as the server sends it</span>
+      <div id="rolec" class="chips nt-on"></div>
+      <span class="h"><span class="nt-off">Name style</span><span class="nt-on">Title</span></span>
+      <div id="titles" class="chips"></div>
+      <p class="note nt-on">Drawn as the game client itself draws the name above the avatar (recorded from the 5.47 client, draw by draw): Dr. turns the whole name red with no shadow; Level 125 is see-through cyan over a teal shadow and swells with the flag; of Legend is larger, with a 2-pixel shadow, in one slowly changing colour beside the orb; Mentor is orange over yellow with the breathing medal; Grow4Good colours each letter from the same colour wheel as its badge&rsquo;s glow; Party Animal gives the letters three colours in turn; Immortal is a yellow name. A title icon is the title item's picture, left of the name and mirrored right of it (the server picks Both / Left / Right).</p>
+      <span class="h"><span class="nt-off">Badge</span><span class="nt-on">Other name states of the game client</span></span>
+      <div id="badges" class="chips"></div>
+      <span class="h">Title icon<span class="nt-off"> &middot; one at a time</span></span>
+      <div id="ticons" class="tiles"></div>
+      <div id="tside" class="chips nt-on"></div>
+    </div>
+    <div class="sub" id="sub-role" hidden>
+      <span class="h">Role icon &middot; <span class="nt-off">shown left of the flag</span><span class="nt-on">left of the flag, as tall as the name (without a flag the client puts it half a line higher)</span></span>
+      <div id="roleicons" class="tiles"></div>
+      <p class="note">The role <i>skin</i> (the head) is under the Skin tab.</p>
+    </div>
+    <div class="sub" id="sub-guild" hidden>
+      <span class="h">Guild role</span>
+      <div id="guild" class="rows"></div>
+      <p class="note nt-on">The tag (GE)/(GC)/(GL) is added by the game client in the name's own font; a plain member has no tag. Every member shows the guild flag in place of the country flag.</p>
+      <span class="h">Guild flag &middot; <span class="nt-off">any item</span><span class="nt-on">foreground item</span></span>
+      <input class="field" id="gflagq" placeholder="Search an item, e.g. world lock" spellcheck="false">
+      <p class="note" id="gflaghint">Type a name to see items. <span class="nt-off">The guild flag shows when a guild role is chosen, in place of the country flag.</span><span class="nt-on">The flag is two item pictures: the background 1.5 &times; the name's height, the foreground smaller in its middle; a foreground alone is drawn large (the server's default foreground is the Guild Lock).</span></p>
+      <div id="gflags" class="tiles"></div>
+      <span class="h nt-on">Guild flag &middot; background item</span>
+      <input class="field nt-on" id="gflagqb" placeholder="Search an item for the background" spellcheck="false">
+      <div id="gflagsb" class="tiles nt-on"></div>
+    </div>
+    <div class="sub" id="sub-wrench" hidden>
+      <p class="note nt-on">Wrench styles and decorations are shown as the reference planner shows them (the game client&rsquo;s own draw of them is not recorded).</p>
+      <span class="h">Wrench style</span>
+      <div id="wstyles" class="tiles"></div>
+      <span class="h">Wrench decoration</span>
+      <div id="wdecos" class="tiles"></div>
+    </div>
+    <div class="sub" id="sub-flag" hidden>
+      <input class="field" id="flagq" placeholder="Search countries..." spellcheck="false">
+      <div id="flags"></div>
+    </div>
+  </section>
+
+  <section class="pane" id="pop-skin" hidden>
+    <span class="h">Skin colour</span>
+    <div id="skins"></div>
+    <label class="own" id="ownbox"><input type="color" id="skinown" value="#c39582"><span>Pick any colour</span></label>
+    <span class="h">Role skin</span>
+    <div id="roles" class="chips"></div>
+    <p class="note">Shown in white so each skin's marks are clear; on the character it takes your skin colour.</p>
+  </section>
+
+  <section class="pane" id="pop-weather" hidden>
+    <div class="wxgrid" id="wxgrid"></div>
+  </section>
+  <section class="pane" id="pop-clothes" hidden>
+    <div id="wearing"></div>
+    <input class="field" id="q" placeholder="Search items..." spellcheck="false">
+    <div id="filters"></div>
+    <span class="h" id="count"></span>
+    <div id="grid"></div>
+    <p class="note" id="src"></p>
+    <p class="note">Orange dot = the worn picture is not built yet, so nothing is shown on the character rather than a wrong picture.</p>
+  </section>
+</aside>
+
+
+<script src="app.js?v=a9aaa33d67"></script>
+</body>
+</html>

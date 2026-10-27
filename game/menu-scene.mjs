@@ -1,0 +1,15 @@
+import {gsap} from 'gsap';
+const cloud='<svg viewBox="0 0 180 100" aria-hidden="true"><path d="M18 40H62V18Q62 8 74 8H105Q117 8 117 20V40H157Q170 40 170 53V70Q170 81 157 81H117V91H63V80H20Q7 80 7 68V52Q7 40 18 40Z" fill="#e8fcff" stroke="#bceaf6" stroke-width="5"/><path d="M19 47H70V22H105V47H155V69H109V90H71V69H19Z" fill="#fff" opacity=".55"/></svg>';
+export function createMenuScene(element){
+ element.innerHTML='<div class="menu-sun"><i></i></div><svg class="mountain mountain-back" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true"><path d="M-100 580 250-80 560 500 830-80 1190 570 1480 40 1740 560V1000H-100Z" fill="#a5a7e4"/><path d="M-80 670 240 0 420 520 740 110 1020 650 1330 210 1660 690V1000H-80Z" fill="#9299dd"/></svg><svg class="mountain mountain-middle" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true"><path d="M-120 590Q90 160 330 600Q530 140 800 580Q1120 110 1370 590Q1510 300 1750 590V1000H-120Z" fill="#8780d0"/><path d="M-80 690Q180 360 420 790Q690 260 920 760Q1200 310 1420 750Q1620 470 1740 730V1000H-80Z" fill="#9674c9"/></svg><svg class="mountain mountain-front" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true"><path d="M-120 940Q20 470 270 900Q480 480 710 970Q870 560 1110 910Q1340 380 1530 850L1720 1000H-120Z" fill="#8637ac"/><path d="M-80 1050Q100 690 260 1060Q580 710 750 1090Q1030 650 1250 1060Q1500 690 1700 1060Z" fill="#742b9e"/></svg>';
+ for(let i=0;i<7;i++){const el=document.createElement('div');el.className='menu-cloud';el.innerHTML=cloud;el.style.left=(i*14)+'%';el.style.top=[5,24,42,67,12,51,76][i]+'%';el.style.width=[130,175,95,150,112,180,88][i]+'px';el.dataset.direction=i%2?'left':'right';el.dataset.duration=45+i*9;element.append(el);}
+ let active=true,media,tweens=[];
+ function animate(){document.documentElement.dataset.reducedMotion=String(localStorage.getItem('growtopia-online:reduced-motion')==='1');media?.revert();media=gsap.matchMedia();media.add('(prefers-reduced-motion: no-preference)',()=>{
+  if(localStorage.getItem('growtopia-online:reduced-motion')==='1')return;
+  tweens=[...element.querySelectorAll('.menu-cloud')].map((el,i)=>{gsap.set(el,{left:0});const right=el.dataset.direction==='right';const tween=gsap.fromTo(el,{x:right?-210:innerWidth+30},{x:right?innerWidth+240:-210,duration:Number(el.dataset.duration),ease:'none',repeat:-1,paused:!active});tween.progress(i/7);return tween;});
+  const move=event=>{if(!active)return;const x=event.clientX/innerWidth-.5,y=event.clientY/innerHeight-.5;for(const [selector,depth] of [['.mountain-back',10],['.mountain-middle',22],['.mountain-front',34]])gsap.to(element.querySelector(selector),{x:x*-depth,y:y*-depth*.3,duration:1.2,overwrite:true});};
+  window.addEventListener('pointermove',move);return()=>{window.removeEventListener('pointermove',move);tweens.forEach(t=>t.kill());tweens=[];};
+ });}
+ animate();window.addEventListener('ambatopia:motion',animate);let resize;window.addEventListener('resize',()=>{clearTimeout(resize);resize=setTimeout(animate,200);});
+ return {screen(name){active=name!=='play';element.hidden=!active;tweens.forEach(t=>active?t.resume():t.pause());}};
+}

@@ -1,0 +1,33 @@
+{
+  "name": "growtopia-local",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "npm run build:deploy && npm run preview:deploy",
+    "acquire": "node scripts/acquire.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "verify:browser": "node scripts/verify-browser.mjs",
+    "qa:fixtures": "node scripts/qa-fixtures.mjs",
+    "build:deploy": "node scripts/build-deploy.mjs",
+    "preview:deploy": "node --env-file-if-exists=.env.online.local scripts/preview-deploy.mjs",
+    "verify:media": "node scripts/verify-media.mjs",
+    "verify:online": "node scripts/verify-online.mjs",
+    "verify:online:load": "node scripts/verify-online-load.mjs"
+  },
+  "engines": {
+    "node": ">=24.11"
+  },
+  "devDependencies": {
+    "@babel/generator": "^8.0.6",
+    "@babel/parser": "^8.0.7",
+    "@babel/traverse": "^8.0.7",
+    "@babel/types": "^8.0.6",
+    "@electric-sql/pglite": "^0.5.10",
+    "@supabase/supabase-js": "^2.118.0",
+    "esbuild": "^0.28.2"
+  },
+  "dependencies": {
+    "gsap": "^3.15.0"
+  }
+}
